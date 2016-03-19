@@ -11,6 +11,7 @@ import pytest
 
 import conda.config as config
 from conda.utils import get_yaml
+from conda.compat import iterkeys
 
 from tests.helpers import run_conda_command
 
@@ -73,35 +74,31 @@ class TestConfig(unittest.TestCase):
         assert config.DEFAULT_CHANNEL_ALIAS == 'https://conda.anaconda.org/'
         assert config.rc.get('channel_alias') == 'https://your.repo/'
 
-        for channel in config.normalize_urls(['defaults', 'system',
+        for channel in iterkeys(config.normalize_urls(['defaults', 'system',
             'https://anaconda.org/username', 'file:///Users/username/repo',
-            'username']):
+            'username'])):
             assert (channel.endswith('/%s/' % current_platform) or
                     channel.endswith('/noarch/'))
         self.assertEqual(config.normalize_urls([
             'defaults', 'system', 'https://conda.anaconda.org/username',
             'file:///Users/username/repo', 'username'
             ], 'osx-64'),
-            [
-                'http://repo.continuum.io/pkgs/free/osx-64/',
-                'http://repo.continuum.io/pkgs/free/noarch/',
-                'http://repo.continuum.io/pkgs/pro/osx-64/',
-                'http://repo.continuum.io/pkgs/pro/noarch/',
-                'https://your.repo/binstar_username/osx-64/',
-                'https://your.repo/binstar_username/noarch/',
-                'http://some.custom/channel/osx-64/',
-                'http://some.custom/channel/noarch/',
-                'http://repo.continuum.io/pkgs/free/osx-64/',
-                'http://repo.continuum.io/pkgs/free/noarch/',
-                'http://repo.continuum.io/pkgs/pro/osx-64/',
-                'http://repo.continuum.io/pkgs/pro/noarch/',
-                'https://conda.anaconda.org/username/osx-64/',
-                'https://conda.anaconda.org/username/noarch/',
-                'file:///Users/username/repo/osx-64/',
-                'file:///Users/username/repo/noarch/',
-                'https://your.repo/username/osx-64/',
-                'https://your.repo/username/noarch/',
-                ])
+			{'file:///Users/username/repo/noarch/': 6,
+			 'file:///Users/username/repo/osx-64/': 6,
+			 'http://some.custom/channel/noarch/': 3,
+			 'http://some.custom/channel/osx-64/': 3,
+			 'https://conda.anaconda.org/username/noarch/': 5,
+			 'https://conda.anaconda.org/username/osx-64/': 5,
+			 'https://repo.continuum.io/pkgs/free/noarch/': 1,
+			 'https://repo.continuum.io/pkgs/free/osx-64/': 1,
+			 'https://repo.continuum.io/pkgs/pro/noarch/': 1,
+			 'https://repo.continuum.io/pkgs/pro/osx-64/': 1,
+			 'https://your.repo/binstar_username/noarch/': 2,
+			 'https://your.repo/binstar_username/osx-64/': 2,
+			 'https://your.repo/defaults/noarch/': 4,
+			 'https://your.repo/defaults/osx-64/': 4,
+			 'https://your.repo/username/noarch/': 7,
+			 'https://your.repo/username/osx-64/': 7})
 
 test_condarc = os.path.join(os.path.dirname(__file__), 'test_condarc')
 def _read_test_condarc():
